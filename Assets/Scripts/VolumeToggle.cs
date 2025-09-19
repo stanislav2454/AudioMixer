@@ -1,23 +1,26 @@
 ﻿using UnityEngine;
+using UnityEngine.Audio;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Toggle))]
 public class VolumeToggle : MonoBehaviour
 {
     [Header("UI References")]
     [SerializeField] private Toggle _volumeToggle;
 
-    private string _playerPrefsKey = "AudioEnabled";
-    private int _defaultValue = 1;
+    [Header("Audio Settings")]
+    [SerializeField] private AudioMixer _audioMixer;
+    [SerializeField] private string _volumeParameter = "MasterVolume";
 
-    private const int SOUND_ENABLED = 1;
-    private const int SOUND_DISABLED = 0;
+    private const string PlayerPrefsKey = "AudioEnabled";
+    private const int SoundEnabled = 1;
+    private const int SoundDisabled = 0;
+    private const float MutedVolume = -80f;
+    private const int DefaultValue = 1;
+
+    private float _previousVolume;
 
     private void Start()
-    {
-        InitializeToggle();
-    }
-
-    private void InitializeToggle()
     {
         if (_volumeToggle == null)
         {
@@ -25,22 +28,49 @@ public class VolumeToggle : MonoBehaviour
             return;
         }
 
-        int savedValue = PlayerPrefs.GetInt(_playerPrefsKey, _defaultValue);
-        bool isSoundEnabled = savedValue == SOUND_ENABLED;
+        InitializeToggle();
+    }
+
+    private void InitializeToggle()
+    {
+        int savedState = PlayerPrefs.GetInt(PlayerPrefsKey, DefaultValue);
+        bool isSoundEnabled = savedState == SoundEnabled;
 
         _volumeToggle.isOn = isSoundEnabled;
-        AudioListener.pause = !isSoundEnabled;
+
+        if (_audioMixer != null)
+            _audioMixer.GetFloat(_volumeParameter, out _previousVolume);
+
+        ApplyAudioState(isSoundEnabled);
 
         _volumeToggle.onValueChanged.AddListener(ToggleAudio);
     }
 
     private void ToggleAudio(bool isOn)
     {
-        AudioListener.pause = isOn == false;
-
-        int saveValue = isOn ? SOUND_ENABLED : SOUND_DISABLED;
-        PlayerPrefs.SetInt(_playerPrefsKey, saveValue);
+        ApplyAudioState(isOn);
+        PlayerPrefs.SetInt(PlayerPrefsKey, isOn ? SoundEnabled : SoundDisabled);
         PlayerPrefs.Save();
+    }
+
+    private void ApplyAudioState(bool isEnabled)
+    {
+        if (_audioMixer != null)
+        {
+            if (isEnabled)
+            {
+                _audioMixer.SetFloat(_volumeParameter, _previousVolume);
+            }
+            else
+            {
+                _audioMixer.GetFloat(_volumeParameter, out _previousVolume);
+                _audioMixer.SetFloat(_volumeParameter, MutedVolume);
+            }
+        }
+        else
+        {
+            AudioListener.pause = isEnabled == false;
+        }
     }
 
     private void OnDestroy()

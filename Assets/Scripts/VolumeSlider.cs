@@ -2,12 +2,13 @@ using UnityEngine;
 using UnityEngine.Audio;
 using UnityEngine.UI;
 
+[RequireComponent(typeof(Slider))]
 public class VolumeSlider : MonoBehaviour
 {
-    private const float MIN_DECIBELS = -80f;
-    private const float DECIBELS_CONVERSION_FACTOR = 20f;
-    private const float VOLUME_THRESHOLD = 0.0001f;
-    private const float MIN_VOLUME = 0.0001f;
+    private const float MinDecibels = -80f;
+    private const float DecibelsConversionFactor = 20f;
+    private const float VolumeThreshold = 0.0001f;
+    private const float MinVolume = 0.0001f;
 
     [Header("Audio Settings")]
     [SerializeField] private AudioMixer _audioMixer;
@@ -33,10 +34,10 @@ public class VolumeSlider : MonoBehaviour
     private void OnValidate()
     {
         if (_minVolume < 0)
-            _minVolume = MIN_VOLUME;
+            _minVolume = MinVolume;
 
         if (_minVolume > _maxVolume)
-            _minVolume = _maxVolume - MIN_VOLUME;
+            _minVolume = _maxVolume - MinVolume;
 
         _maxVolume = Mathf.Max(_minVolume, _maxVolume);
         _defaultVolume = Mathf.Clamp(_defaultVolume, _minVolume, _maxVolume);
@@ -114,11 +115,11 @@ public class VolumeSlider : MonoBehaviour
 
     private float ConvertLinearToDecibels(float linearVolume)
     {
-        if (linearVolume <= VOLUME_THRESHOLD)
+        if (linearVolume <= VolumeThreshold)
         {
-            return MIN_DECIBELS;
+            return MinDecibels;
         }
 
-        return Mathf.Log10(linearVolume) * DECIBELS_CONVERSION_FACTOR;
+        return Mathf.Log10(linearVolume) * DecibelsConversionFactor;
     }
 }
