@@ -3937,6 +3937,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _volumeToggle: {fileID: 7703173905557552582}
+  _audioMixer: {fileID: 24100000, guid: 7134e307ff5ef014097b94cbfb5e0c62, type: 2}
+  _volumeParameter: MasterVolume
 --- !u!1 &7793592226535936435
 GameObject:
   m_ObjectHideFlags: 0
